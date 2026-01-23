@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClassScribe - App Layout</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f9;
+        }
+        /* Simple transition for view switching */
+        .view {
+            transition: opacity 0.3s ease-in-out;
+        }
+        /* Custom modal backdrop */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body class="antialiased text-slate-800">
+
+    <!-- App Wrapper -->
+    <div id="app-container" class="w-full min-h-screen">
+
+        <!-- ====================================================== -->
+        <!-- LOGIN VIEW -->
+        <!-- ====================================================== -->
+        <div id="login-view" class="view flex items-center justify-center min-h-screen bg-gray-100">
+            <div class="w-full max-w-sm p-8 space-y-6 bg-white rounded-2xl shadow-lg">
+                <div class="flex flex-col items-center space-y-2">
+                    <!-- App Logo -->
+                    <svg class="h-12 w-12 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                    </svg>
+                    <h1 class="text-3xl font-bold text-gray-800">ClassScribe</h1>
+                    <p class="text-gray-500">Your class notes, organized.</p>
+                </div>
+                <form class="space-y-4" onsubmit="event.preventDefault(); login();">
+                    <div>
+                        <label for="email" class="text-sm font-medium text-gray-700">Student Email</label>
+                        <input type="email" id="email" value="student@university.edu" class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="password" class="text-sm font-medium text-gray-700">Password</label>
+                        <input type="password" id="password" value="password" class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    </div>
+                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Login
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ====================================================== -->
+        <!-- MAIN APP VIEW (Initially Hidden) -->
+        <!-- ====================================================== -->
+        <div id="app-view" class="view hidden opacity-0">
+            <header class="bg-white shadow-sm sticky top-0 z-10">
+                <nav class="container mx-auto px-4 lg:px-8 flex items-center justify-between h-16">
+                    <div class="flex items-center space-x-3">
+                         <svg class="h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                        </svg>
+                        <h1 class="text-xl font-bold text-gray-800">ClassScribe</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm font-medium">Welcome, Student!</span>
+                        <img class="h-9 w-9 rounded-full object-cover" src="https://placehold.co/100x100/E2E8F0/4A5568?text=S" alt="User Avatar">
+                    </div>
+                </nav>
+            </header>
+
+            <main class="container mx-auto p-4 lg:p-8">
+                <!-- DASHBOARD VIEW -->
+                <div id="dashboard-view">
+                    <h2 class="text-2xl font-bold mb-6">Your Subjects</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        <!-- Subject Cards will be dynamically inserted here -->
+                    </div>
+                </div>
+
+                <!-- SUBJECT NOTES VIEW (Initially Hidden) -->
+                <div id="subject-view" class="hidden">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                             <button onclick="showDashboard()" class="text-sm font-medium text-blue-600 hover:underline flex items-center space-x-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                                </svg>
+                                <span>Back to Subjects</span>
+                            </button>
+                            <h2 id="subject-title" class="text-2xl font-bold mt-1"></h2>
+                        </div>
+                        <button onclick="openUploadModal()" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 flex items-center space-x-2">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                            </svg>
+                            <span>Upload Note</span>
+                        </button>
+                    </div>
+                    <div id="notes-list" class="space-y-4">
+                        <!-- Notes will be dynamically inserted here -->
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- ====================================================== -->
+        <!-- UPLOAD MODAL (Initially Hidden) -->
+        <!-- ====================================================== -->
+        <div id="upload-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop">
+             <div class="bg-white w-full max-w-lg p-6 rounded-2xl shadow-xl transform transition-all" onclick="event.stopPropagation()">
+                <div class="flex items-center justify-between pb-3 border-b">
+                    <h3 class="text-lg font-bold">Upload New Note</h3>
+                    <button onclick="closeUploadModal()" class="p-1 rounded-full hover:bg-gray-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="mt-4 space-y-4">
+                     <div>
+                        <label for="note-title-input" class="text-sm font-medium text-gray-700">Note Title</label>
+                        <input type="text" id="note-title-input" placeholder="e.g., Chapter 5 Summary" class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                     <div>
+                        <label for="subject-select" class="text-sm font-medium text-gray-700">Subject</label>
+                        <select id="subject-select" class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                           <!-- Options will be populated by JS -->
+                        </select>
+                    </div>
+                     <div>
+                        <label class="block text-sm font-medium text-gray-700">Note File (PDF, PNG, JPG)</label>
+                        <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                            <div class="space-y-1 text-center">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                                <div class="flex text-sm text-gray-600">
+                                    <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                                        <span>Upload a file</span>
+                                        <input id="file-upload" name="file-upload" type="file" class="sr-only">
+                                    </label>
+                                    <p class="pl-1">or drag and drop</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                     <button onclick="closeUploadModal()" class="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400">Cancel</button>
+                     <button onclick="closeUploadModal()" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400">Submit Note</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ====================================================== //
+        // MOCK DATA & STATE MANAGEMENT
+        // ====================================================== //
+        
+        const subjects = [
+            { id: 'phy-101', name: 'Physics II', icon: '⚡️', color: 'bg-yellow-100', textColor: 'text-yellow-800' },
+            { id: 'chem-lab-202', name: 'Chemistry Lab', icon: '🧪', color: 'bg-green-100', textColor: 'text-green-800' },
+            { id: 'cs-301', name: 'Data Structures', icon: '💻', color: 'bg-blue-100', textColor: 'text-blue-800' },
+            { id: 'math-250', name: 'Calculus III', icon: '📐', color: 'bg-purple-100', textColor: 'text-purple-800' }
+        ];
+
+        let notes = {
+            'phy-101': [
+                { id: 1, title: "Lecture 3: Electromagnetism Summary", uploader: "Priya S.", upvotes: 42, isVerified: true },
+                { id: 2, title: "Homework 2 Solutions", uploader: "Rahul V.", upvotes: 18, isVerified: false }
+            ],
+            'chem-lab-202': [
+                { id: 3, title: "Experiment 5: Titration Report", uploader: "Ananya R.", upvotes: 56, isVerified: true },
+                { id: 4, title: "Lab Safety Quick Reference", uploader: "Admin", upvotes: 98, isVerified: true },
+                { id: 5, title: "Pre-Lab Quiz Notes", uploader: "Sameer K.", upvotes: 25, isVerified: false }
+            ],
+            'cs-301': [
+                 { id: 6, title: "Big O Notation Cheatsheet", uploader: "Meera G.", upvotes: 89, isVerified: true },
+                 { id: 7, title: "Mid-term Exam Review Sheet", uploader: "Rohan P.", upvotes: 61, isVerified: false },
+            ],
+             'math-250': []
+        };
+
+
+        // ====================================================== //
+        // UI RENDERING FUNCTIONS
+        // ====================================================== //
+        
+        function renderDashboard() {
+            const container = document.querySelector('#dashboard-view .grid');
+            container.innerHTML = subjects.map(subject => `
+                <div onclick="showSubject('${subject.id}')" class="group p-6 ${subject.color} rounded-xl shadow-sm hover:shadow-lg cursor-pointer transition-all duration-300 ease-in-out transform hover:-translate-y-1">
+                    <div class="flex flex-col h-full">
+                        <div class="text-4xl mb-4">${subject.icon}</div>
+                        <h3 class="text-lg font-bold ${subject.textColor}">${subject.name}</h3>
+                        <p class="text-sm ${subject.textColor} opacity-80 mt-1">${notes[subject.id]?.length || 0} notes available</p>
+                        <div class="mt-auto pt-4 text-sm font-semibold ${subject.textColor} opacity-60 group-hover:opacity-100 transition-opacity">View Notes →</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderNotes(subjectId) {
+            const container = document.getElementById('notes-list');
+            const subjectNotes = notes[subjectId] || [];
+
+            if (subjectNotes.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 px-6 bg-white rounded-lg shadow-sm">
+                        <h3 class="text-lg font-semibold text-gray-800">No notes yet!</h3>
+                        <p class="mt-2 text-sm text-gray-500">Why not be the first to upload one?</p>
+                        <button onclick="openUploadModal()" class="mt-4 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700">Upload a Note</button>
+                    </div>`;
+                return;
+            }
+
+            // Sort notes to show verified ones first, then by upvotes
+            subjectNotes.sort((a, b) => {
+                if (a.isVerified !== b.isVerified) return a.isVerified ? -1 : 1;
+                return b.upvotes - a.upvotes;
+            });
+            
+            container.innerHTML = subjectNotes.map(note => `
+                <div class="bg-white rounded-lg shadow-sm p-4 flex items-center justify-between transition-shadow hover:shadow-md">
+                    <div class="flex items-center space-x-4">
+                        ${note.isVerified 
+                            ? `<div class="flex-shrink-0 flex flex-col items-center justify-center h-12 w-12 rounded-full bg-green-100 text-green-600" title="Verified by a topper">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                               </div>` 
+                            : `<div class="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-gray-100 text-gray-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                               </div>`
+                        }
+                        <div>
+                            <h4 class="font-semibold text-gray-800">${note.title}</h4>
+                            <p class="text-xs text-gray-500">Uploaded by ${note.uploader}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                         <button onclick="upvoteNote(${subjectId}, ${note.id}, this)" class="flex items-center space-x-2 text-gray-500 font-medium py-2 px-3 rounded-lg hover:bg-gray-100 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333V17a1 1 0 001 1h6.758a1 1 0 00.97-1.22l-1.396-4.887A1 1 0 0012.358 11H9.5a1 1 0 00-1-1H6zM7 9a1 1 0 011-1h2.5a1 1 0 01.97 1.22l-1.396 4.887A1 1 0 019.118 15H8a1 1 0 01-1-1V9z" />
+                            </svg>
+                            <span class="text-sm">${note.upvotes}</span>
+                        </button>
+                        <button class="px-3 py-2 bg-gray-100 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors">Download</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function populateUploadModalSubjects() {
+             const select = document.getElementById('subject-select');
+             select.innerHTML = subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+        }
+
+
+        // ====================================================== //
+        // NAVIGATION & EVENT HANDLERS
+        // ====================================================== //
+
+        function login() {
+            const loginView = document.getElementById('login-view');
+            const appView = document.getElementById('app-view');
+            
+            loginView.classList.add('opacity-0');
+            setTimeout(() => {
+                loginView.classList.add('hidden');
+                appView.classList.remove('hidden');
+                setTimeout(() => appView.classList.remove('opacity-0'), 20); // Fade in
+            }, 300);
+        }
+
+        function showDashboard() {
+            document.getElementById('dashboard-view').classList.remove('hidden');
+            document.getElementById('subject-view').classList.add('hidden');
+        }
+
+        function showSubject(subjectId) {
+            const subject = subjects.find(s => s.id === subjectId);
+            document.getElementById('subject-title').textContent = subject.name;
+            renderNotes(subjectId);
+            document.getElementById('dashboard-view').classList.add('hidden');
+            document.getElementById('subject-view').classList.remove('hidden');
+        }
+        
+        function upvoteNote(subjectId, noteId, button) {
+             const subjectKey = subjects.find(s => s.id == subjectId).id;
+             const note = notes[subjectKey].find(n => n.id == noteId);
+             if (note) {
+                 note.upvotes++;
+                 button.querySelector('span').textContent = note.upvotes;
+                 // Add a little visual feedback
+                 button.classList.add('text-blue-600');
+                 setTimeout(() => button.classList.remove('text-blue-600'), 500);
+             }
+        }
+
+        function openUploadModal() {
+            document.getElementById('upload-modal').classList.remove('hidden');
+            document.getElementById('upload-modal').classList.add('flex');
+        }
+        function closeUploadModal() {
+            document.getElementById('upload-modal').classList.add('hidden');
+            document.getElementById('upload-modal').classList.remove('flex');
+        }
+        
+        // Close modal on outside click
+        document.getElementById('upload-modal').addEventListener('click', closeUploadModal);
+
+
+        // ====================================================== //
+        // INITIALIZATION
+        // ====================================================== //
+        
+        window.onload = () => {
+            renderDashboard();
+            populateUploadModalSubjects();
+        };
+
+    </script>
+</body>
+</html>
