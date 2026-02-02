@@ -39,8 +39,17 @@
     <div class="kinetic-bg"></div>
 
     <div id="app-container" class="w-full min-h-screen relative">
-        <!-- Login View -->
-        <div id="login-view" class="flex items-center justify-center min-h-screen p-4">
+        
+        <!-- Loading Screen (Visible Initially) -->
+        <div id="loading-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-white">
+            <div class="flex flex-col items-center">
+                <div class="loader mb-4 border-blue-500"></div>
+                <p class="text-gray-500 font-medium">Loading ClassScribe...</p>
+            </div>
+        </div>
+
+        <!-- Login View (Hidden Initially) -->
+        <div id="login-view" class="hidden flex items-center justify-center min-h-screen p-4 opacity-0 transition-opacity duration-500">
             <div class="w-full max-w-sm p-8 space-y-6 glass-panel rounded-3xl shadow-2xl">
                 <div class="flex flex-col items-center space-y-2">
                     <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">ClassScribe</h1>
@@ -55,7 +64,7 @@
             </div>
         </div>
 
-        <!-- Main App View -->
+        <!-- Main App View (Hidden Initially) -->
         <div id="app-view" class="hidden opacity-0 transition-opacity duration-500">
             <header class="glass-panel sticky top-4 mx-4 mt-4 rounded-2xl shadow-lg z-10">
                 <nav class="px-4 lg:px-8 flex items-center justify-between h-16">
@@ -125,25 +134,23 @@
         // 1. SUPABASE CONFIGURATION
         // ====================================================== //
         
-        // TODO: PASTE YOUR SUPABASE KEYS HERE
+        // YOUR KEYS ARE PRESERVED HERE:
         const supabaseUrl = 'https://vsznurfikijpjcxyoinx.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZzem51cmZpa2lqcGpjeHlvaW54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwNTAwODcsImV4cCI6MjA4NTYyNjA4N30.QOPyDkJtCvivYozlBzu0Wuh8A9BVCBMP2SEz3vh-4l4';
-        const geminiApiKey = ""; // Paste Gemini Key Here
+        const geminiApiKey = ""; // Add this later if you want AI features
 
         // Renamed to 'supabaseClient' to avoid naming conflict with the global 'supabase' object from the CDN library
         let supabaseClient;
         
         try {
-            // Validation to ensure app doesn't crash on initial load without keys
             if (supabaseUrl === 'PASTE_YOUR_PROJECT_URL_HERE' || !supabaseUrl.startsWith('http')) {
                 console.warn("Supabase keys missing. App loading in mock mode.");
-                // Create a mock client that gracefully handles auth calls without crashing
                 supabaseClient = {
                     auth: {
                         getSession: () => Promise.resolve({ data: { session: null } }),
                         onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
-                        signInWithPassword: () => Promise.resolve({ error: { message: "Please paste your Supabase URL & Anon Key in the code to login." } }),
-                        signUp: () => Promise.resolve({ error: { message: "Please paste your Supabase URL & Anon Key in the code to login." } }),
+                        signInWithPassword: () => Promise.resolve({ error: { message: "Keys missing." } }),
+                        signUp: () => Promise.resolve({ error: { message: "Keys missing." } }),
                         signOut: () => Promise.resolve()
                     }
                 };
@@ -169,7 +176,7 @@
         ];
 
         // ====================================================== //
-        // 3. AUTHENTICATION
+        // 3. AUTHENTICATION & APP LOAD
         // ====================================================== //
         
         // Check session on load
@@ -181,9 +188,11 @@
             } else {
                 showLogin();
             }
+            // Hide loading screen after decision is made
+            document.getElementById('loading-screen').classList.add('hidden');
         });
 
-        // Listen for changes
+        // Listen for auth changes (Login/Logout)
         supabaseClient.auth.onAuthStateChange((_event, session) => {
             if (session) {
                 currentUser = session.user;
@@ -204,19 +213,9 @@
             btn.textContent = "Processing...";
             errorText.classList.add('hidden');
 
-            // Try Login
             let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
             
             if (error) {
-                // If the error is our custom mock error, show it directly
-                if (error.message.includes("Please paste your Supabase URL")) {
-                    errorText.textContent = error.message;
-                    errorText.classList.remove('hidden');
-                    btn.textContent = "Login / Sign Up";
-                    return;
-                }
-
-                // If login fails, try signup
                 const signUpResponse = await supabaseClient.auth.signUp({ email, password });
                 if (signUpResponse.error) {
                     errorText.textContent = signUpResponse.error.message;
@@ -230,6 +229,7 @@
 
         async function logout() {
             await supabaseClient.auth.signOut();
+            window.location.reload(); // Hard refresh to clear any state
         }
         
         function updateUserDisplay() {
@@ -242,13 +242,23 @@
 
         function showLogin() {
             document.getElementById('login-view').classList.remove('hidden');
-            document.getElementById('app-view').classList.add('hidden', 'opacity-0');
+            setTimeout(() => document.getElementById('login-view').classList.remove('opacity-0'), 10);
+            
+            document.getElementById('app-view').classList.add('hidden');
+            document.getElementById('app-view').classList.add('opacity-0');
         }
 
         function showApp() {
             document.getElementById('login-view').classList.add('hidden');
+            document.getElementById('login-view').classList.add('opacity-0');
+            
             document.getElementById('app-view').classList.remove('hidden');
             setTimeout(() => document.getElementById('app-view').classList.remove('opacity-0'), 10);
+            renderDashboard();
+        }
+
+        function showDashboard() {
+            currentSubjectId = null;
             renderDashboard();
         }
 
@@ -335,10 +345,8 @@
             if (!title || !file) { alert("Please fill details"); return; }
             btn.textContent = "Uploading...";
 
-            // Use a clean filename with timestamp
             const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
             
-            // 1. Upload to Supabase Storage
             const { data: uploadData, error: uploadError } = await supabaseClient.storage
                 .from('notes')
                 .upload(fileName, file);
@@ -349,12 +357,10 @@
                 return;
             }
 
-            // 2. Get Public URL
             const { data: { publicUrl } } = supabaseClient.storage
                 .from('notes')
                 .getPublicUrl(fileName);
 
-            // 3. Insert into Database
             const { error: dbError } = await supabaseClient
                 .from('notes')
                 .insert([{
@@ -369,14 +375,14 @@
                 alert("Database error: " + dbError.message);
             } else {
                 closeUploadModal();
-                loadNotes(currentSubjectId); // Refresh list
+                loadNotes(currentSubjectId);
             }
             btn.textContent = "Submit";
         }
 
         async function upvoteNote(noteId, currentVotes) {
             await supabaseClient.from('notes').update({ upvotes: Number(currentVotes) + 1 }).eq('id', noteId);
-            loadNotes(currentSubjectId); // Simple refresh
+            loadNotes(currentSubjectId);
         }
 
         // ====================================================== //
@@ -388,33 +394,4 @@
         
         async function callGemini(payload) {
              if(!geminiApiKey) { alert("Please add API Key"); return; }
-             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${geminiApiKey}`, {
-                 method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
-             });
-             const data = await res.json();
-             return data.candidates?.[0]?.content?.parts?.[0]?.text || "Error";
-        }
-
-        async function explainConcept(title) {
-            openAiModal(); document.getElementById('ai-modal-content').innerHTML = '<div class="loader"></div>';
-            const text = await callGemini({ contents: [{ parts: [{ text: `Explain "${title}" simply.` }] }] });
-            document.getElementById('ai-modal-content').innerHTML = `<div class="prose max-w-none text-gray-700">${text.replace(/\n/g, '<br>')}</div>`;
-        }
-
-        async function generateFlashcards(title) {
-             openAiModal(); document.getElementById('ai-modal-content').innerHTML = '<div class="loader"></div>';
-             const text = await callGemini({ contents: [{ parts: [{ text: `Create 3 flashcards for "${title}" as JSON array [{term, definition}]` }] }] });
-             try {
-                 const cards = JSON.parse(text.replace(/```json/g, '').replace(/```/g, ''));
-                 document.getElementById('ai-modal-content').innerHTML = cards.map(c => `<div class="p-4 bg-purple-50 rounded-lg mb-2"><b class="text-purple-800">${c.term}</b><p>${c.definition}</p></div>`).join('');
-             } catch(e) { document.getElementById('ai-modal-content').innerText = "Failed to generate."; }
-        }
-        
-        // Init Handlers
-        document.getElementById('upload-modal').addEventListener('click', closeUploadModal);
-        document.getElementById('ai-result-modal').addEventListener('click', closeAiModal);
-        document.getElementById('quiz-btn').onclick = () => { alert("Quiz feature requires notes to analyze first!"); };
-
-    </script>
-</body>
-</html>
+             const res = await fetch(`
