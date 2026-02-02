@@ -3,330 +3,417 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClassScribe - App Layout</title>
+    <title>ClassScribe - Live</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f4f7f9;
+        body { font-family: 'Outfit', sans-serif; overflow-x: hidden; }
+        .kinetic-bg {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
         }
-        /* Simple transition for view switching */
-        .view {
-            transition: opacity 0.3s ease-in-out;
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
-        /* Custom modal backdrop */
-        .modal-backdrop {
-            background-color: rgba(0, 0, 0, 0.5);
-        }
+        .glass-panel { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        .glass-card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .glass-card:hover { transform: translateY(-5px) scale(1.02); background: rgba(255, 255, 255, 0.9); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .modal-backdrop { background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px); }
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-content { display: none; position: absolute; right: 0; background-color: rgba(255, 255, 255, 0.95); min-width: 180px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1); border-radius: 12px; z-index: 50; }
+        .dropdown:hover .dropdown-content { display: block; }
+        .loader { border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #3b82f6; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="antialiased text-slate-800">
 
-    <!-- App Wrapper -->
-    <div id="app-container" class="w-full min-h-screen">
+    <div class="kinetic-bg"></div>
 
-        <!-- ====================================================== -->
-        <!-- LOGIN VIEW -->
-        <!-- ====================================================== -->
-        <div id="login-view" class="view flex items-center justify-center min-h-screen bg-gray-100">
-            <div class="w-full max-w-sm p-8 space-y-6 bg-white rounded-2xl shadow-lg">
+    <div id="app-container" class="w-full min-h-screen relative">
+        <!-- Login View -->
+        <div id="login-view" class="flex items-center justify-center min-h-screen p-4">
+            <div class="w-full max-w-sm p-8 space-y-6 glass-panel rounded-3xl shadow-2xl">
                 <div class="flex flex-col items-center space-y-2">
-                    <!-- App Logo -->
-                    <svg class="h-12 w-12 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-                    </svg>
-                    <h1 class="text-3xl font-bold text-gray-800">ClassScribe</h1>
-                    <p class="text-gray-500">Your class notes, organized.</p>
+                    <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">ClassScribe</h1>
+                    <p class="text-gray-500 font-medium">Supabase Edition</p>
                 </div>
-                <form class="space-y-4" onsubmit="event.preventDefault(); login();">
-                    <div>
-                        <label for="email" class="text-sm font-medium text-gray-700">Student Email</label>
-                        <input type="email" id="email" value="student@university.edu" class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                    </div>
-                    <div>
-                        <label for="password" class="text-sm font-medium text-gray-700">Password</label>
-                        <input type="password" id="password" value="password" class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                    </div>
-                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        Login
-                    </button>
+                <form class="space-y-4" onsubmit="event.preventDefault(); handleLogin();">
+                    <input type="email" id="email" placeholder="Student Email" class="block w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl">
+                    <input type="password" id="password" placeholder="Password" class="block w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl">
+                    <button type="submit" id="login-btn" class="w-full py-3 px-4 rounded-xl text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:scale-[1.02] transition">Login / Sign Up</button>
+                    <p id="login-error" class="text-red-500 text-sm text-center hidden"></p>
                 </form>
             </div>
         </div>
 
-        <!-- ====================================================== -->
-        <!-- MAIN APP VIEW (Initially Hidden) -->
-        <!-- ====================================================== -->
-        <div id="app-view" class="view hidden opacity-0">
-            <header class="bg-white shadow-sm sticky top-0 z-10">
-                <nav class="container mx-auto px-4 lg:px-8 flex items-center justify-between h-16">
-                    <div class="flex items-center space-x-3">
-                         <svg class="h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-                        </svg>
-                        <h1 class="text-xl font-bold text-gray-800">ClassScribe</h1>
-                    </div>
+        <!-- Main App View -->
+        <div id="app-view" class="hidden opacity-0 transition-opacity duration-500">
+            <header class="glass-panel sticky top-4 mx-4 mt-4 rounded-2xl shadow-lg z-10">
+                <nav class="px-4 lg:px-8 flex items-center justify-between h-16">
+                    <h1 class="text-xl font-bold text-blue-800">ClassScribe</h1>
                     <div class="flex items-center space-x-4">
-                        <span class="text-sm font-medium">Welcome, Student!</span>
-                        <img class="h-9 w-9 rounded-full object-cover" src="https://placehold.co/100x100/E2E8F0/4A5568?text=S" alt="User Avatar">
+                        <span id="user-display-email" class="text-sm font-semibold text-gray-700 bg-white/50 px-3 py-1 rounded-full"></span>
+                        <button onclick="logout()" class="text-sm text-red-500 font-bold hover:underline">Logout</button>
                     </div>
                 </nav>
             </header>
 
-            <main class="container mx-auto p-4 lg:p-8">
-                <!-- DASHBOARD VIEW -->
+            <main class="container mx-auto p-4 lg:p-8 mt-2">
+                <!-- Dashboard -->
                 <div id="dashboard-view">
-                    <h2 class="text-2xl font-bold mb-6">Your Subjects</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                        <!-- Subject Cards will be dynamically inserted here -->
+                    <h2 class="text-3xl font-bold text-white mb-6 drop-shadow-md">Your Subjects</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" id="subjects-grid">
+                        <!-- Subjects injected here -->
                     </div>
                 </div>
 
-                <!-- SUBJECT NOTES VIEW (Initially Hidden) -->
+                <!-- Subject Notes -->
                 <div id="subject-view" class="hidden">
-                    <div class="flex items-center justify-between mb-6">
+                    <div class="glass-panel rounded-2xl p-6 mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
                         <div>
-                             <button onclick="showDashboard()" class="text-sm font-medium text-blue-600 hover:underline flex items-center space-x-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                                </svg>
-                                <span>Back to Subjects</span>
-                            </button>
-                            <h2 id="subject-title" class="text-2xl font-bold mt-1"></h2>
+                            <button onclick="showDashboard()" class="text-sm font-bold text-gray-500 hover:text-blue-600 mb-2">← Back to Dashboard</button>
+                            <h2 id="subject-title" class="text-3xl font-bold text-gray-800"></h2>
                         </div>
-                        <button onclick="openUploadModal()" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 flex items-center space-x-2">
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                            </svg>
-                            <span>Upload Note</span>
-                        </button>
+                        <div class="flex space-x-3">
+                             <button id="quiz-btn" class="px-5 py-3 bg-white/50 text-purple-700 font-bold rounded-xl shadow-sm hover:bg-purple-50">✨ Quiz Me</button>
+                            <button onclick="openUploadModal()" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700">Upload Note</button>
+                        </div>
                     </div>
-                    <div id="notes-list" class="space-y-4">
-                        <!-- Notes will be dynamically inserted here -->
-                    </div>
+                    <div id="notes-list" class="space-y-4"></div>
                 </div>
             </main>
         </div>
 
-        <!-- ====================================================== -->
-        <!-- UPLOAD MODAL (Initially Hidden) -->
-        <!-- ====================================================== -->
-        <div id="upload-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop">
-             <div class="bg-white w-full max-w-lg p-6 rounded-2xl shadow-xl transform transition-all" onclick="event.stopPropagation()">
-                <div class="flex items-center justify-between pb-3 border-b">
-                    <h3 class="text-lg font-bold">Upload New Note</h3>
-                    <button onclick="closeUploadModal()" class="p-1 rounded-full hover:bg-gray-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+        <!-- Upload Modal -->
+        <div id="upload-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4">
+             <div class="glass-panel w-full max-w-lg p-8 rounded-3xl shadow-2xl" onclick="event.stopPropagation()">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Upload New Note</h3>
+                <div class="space-y-5">
+                    <input type="text" id="note-title-input" placeholder="Note Title" class="block w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl">
+                    <input type="file" id="file-upload" class="block w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl">
                 </div>
-                <div class="mt-4 space-y-4">
-                     <div>
-                        <label for="note-title-input" class="text-sm font-medium text-gray-700">Note Title</label>
-                        <input type="text" id="note-title-input" placeholder="e.g., Chapter 5 Summary" class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                    </div>
-                     <div>
-                        <label for="subject-select" class="text-sm font-medium text-gray-700">Subject</label>
-                        <select id="subject-select" class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                           <!-- Options will be populated by JS -->
-                        </select>
-                    </div>
-                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Note File (PDF, PNG, JPG)</label>
-                        <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                            <div class="space-y-1 text-center">
-                                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
-                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                                </svg>
-                                <div class="flex text-sm text-gray-600">
-                                    <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
-                                        <span>Upload a file</span>
-                                        <input id="file-upload" name="file-upload" type="file" class="sr-only">
-                                    </label>
-                                    <p class="pl-1">or drag and drop</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-6 flex justify-end space-x-3">
-                     <button onclick="closeUploadModal()" class="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400">Cancel</button>
-                     <button onclick="closeUploadModal()" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400">Submit Note</button>
+                <div class="mt-8 flex justify-end space-x-3">
+                     <button onclick="closeUploadModal()" class="px-5 py-2.5 bg-gray-100 rounded-xl">Cancel</button>
+                     <button id="submit-upload-btn" onclick="handleUpload()" class="px-5 py-2.5 bg-blue-600 text-white font-bold rounded-xl">Submit</button>
                 </div>
             </div>
         </div>
-
+        
+        <!-- AI Modal -->
+        <div id="ai-result-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4">
+             <div class="glass-panel w-full max-w-2xl p-8 rounded-3xl shadow-2xl flex flex-col" style="max-height: 85vh;" onclick="event.stopPropagation()">
+                <div class="flex items-center justify-between pb-4 border-b">
+                    <h3 id="ai-modal-title" class="text-xl font-bold text-purple-700">✨ AI Study Tool</h3>
+                    <button onclick="closeAiModal()" class="text-gray-500">✕</button>
+                </div>
+                <div id="ai-modal-content" class="mt-6 space-y-4 overflow-y-auto pr-2"></div>
+            </div>
+        </div>
     </div>
 
     <script>
         // ====================================================== //
-        // MOCK DATA & STATE MANAGEMENT
+        // 1. SUPABASE CONFIGURATION
         // ====================================================== //
+        
+        // TODO: PASTE YOUR SUPABASE KEYS HERE
+        const supabaseUrl = 'https://vsznurfikijpjcxyoinx.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZzem51cmZpa2lqcGpjeHlvaW54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwNTAwODcsImV4cCI6MjA4NTYyNjA4N30.QOPyDkJtCvivYozlBzu0Wuh8A9BVCBMP2SEz3vh-4l4';
+        const geminiApiKey = ""; // Paste Gemini Key Here
+
+        // Renamed to 'supabaseClient' to avoid naming conflict with the global 'supabase' object from the CDN library
+        let supabaseClient;
+        
+        try {
+            // Validation to ensure app doesn't crash on initial load without keys
+            if (supabaseUrl === 'PASTE_YOUR_PROJECT_URL_HERE' || !supabaseUrl.startsWith('http')) {
+                console.warn("Supabase keys missing. App loading in mock mode.");
+                // Create a mock client that gracefully handles auth calls without crashing
+                supabaseClient = {
+                    auth: {
+                        getSession: () => Promise.resolve({ data: { session: null } }),
+                        onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+                        signInWithPassword: () => Promise.resolve({ error: { message: "Please paste your Supabase URL & Anon Key in the code to login." } }),
+                        signUp: () => Promise.resolve({ error: { message: "Please paste your Supabase URL & Anon Key in the code to login." } }),
+                        signOut: () => Promise.resolve()
+                    }
+                };
+            } else {
+                supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+            }
+        } catch (e) {
+            console.error("Supabase Init Error:", e);
+        }
+
+        // ====================================================== //
+        // 2. STATE
+        // ====================================================== //
+        let currentUser = null;
+        let currentSubjectId = null;
         
         const subjects = [
-            { id: 'phy-101', name: 'Physics II', icon: '⚡️', color: 'bg-yellow-100', textColor: 'text-yellow-800' },
-            { id: 'chem-lab-202', name: 'Chemistry Lab', icon: '🧪', color: 'bg-green-100', textColor: 'text-green-800' },
-            { id: 'cs-301', name: 'Data Structures', icon: '💻', color: 'bg-blue-100', textColor: 'text-blue-800' },
-            { id: 'math-250', name: 'Calculus III', icon: '📐', color: 'bg-purple-100', textColor: 'text-purple-800' }
+            { id: 'math-2', name: 'Maths 2', icon: '∫dx', gradient: 'from-blue-400 to-indigo-500', description: 'Calculus, Matrices & more' },
+            { id: 'chemistry', name: 'Chemistry', icon: '⚗️', gradient: 'from-pink-400 to-rose-500', description: 'Organic & Inorganic Chem' },
+            { id: 'electrical', name: 'Electrical', icon: '⚡', gradient: 'from-amber-400 to-orange-500', description: 'Circuits & Transformers' },
+            { id: 'pps', name: 'PPS', icon: '💻', gradient: 'from-emerald-400 to-teal-500', description: 'C Programming & Algo' },
+            { id: 'evs', name: 'EVS', icon: '🌱', gradient: 'from-lime-400 to-green-500', description: 'Environmental Science' }
         ];
 
-        let notes = {
-            'phy-101': [
-                { id: 1, title: "Lecture 3: Electromagnetism Summary", uploader: "Priya S.", upvotes: 42, isVerified: true },
-                { id: 2, title: "Homework 2 Solutions", uploader: "Rahul V.", upvotes: 18, isVerified: false }
-            ],
-            'chem-lab-202': [
-                { id: 3, title: "Experiment 5: Titration Report", uploader: "Ananya R.", upvotes: 56, isVerified: true },
-                { id: 4, title: "Lab Safety Quick Reference", uploader: "Admin", upvotes: 98, isVerified: true },
-                { id: 5, title: "Pre-Lab Quiz Notes", uploader: "Sameer K.", upvotes: 25, isVerified: false }
-            ],
-            'cs-301': [
-                 { id: 6, title: "Big O Notation Cheatsheet", uploader: "Meera G.", upvotes: 89, isVerified: true },
-                 { id: 7, title: "Mid-term Exam Review Sheet", uploader: "Rohan P.", upvotes: 61, isVerified: false },
-            ],
-             'math-250': []
-        };
-
-
         // ====================================================== //
-        // UI RENDERING FUNCTIONS
+        // 3. AUTHENTICATION
         // ====================================================== //
         
-        function renderDashboard() {
-            const container = document.querySelector('#dashboard-view .grid');
-            container.innerHTML = subjects.map(subject => `
-                <div onclick="showSubject('${subject.id}')" class="group p-6 ${subject.color} rounded-xl shadow-sm hover:shadow-lg cursor-pointer transition-all duration-300 ease-in-out transform hover:-translate-y-1">
-                    <div class="flex flex-col h-full">
-                        <div class="text-4xl mb-4">${subject.icon}</div>
-                        <h3 class="text-lg font-bold ${subject.textColor}">${subject.name}</h3>
-                        <p class="text-sm ${subject.textColor} opacity-80 mt-1">${notes[subject.id]?.length || 0} notes available</p>
-                        <div class="mt-auto pt-4 text-sm font-semibold ${subject.textColor} opacity-60 group-hover:opacity-100 transition-opacity">View Notes →</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-        
-        function renderNotes(subjectId) {
-            const container = document.getElementById('notes-list');
-            const subjectNotes = notes[subjectId] || [];
-
-            if (subjectNotes.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-12 px-6 bg-white rounded-lg shadow-sm">
-                        <h3 class="text-lg font-semibold text-gray-800">No notes yet!</h3>
-                        <p class="mt-2 text-sm text-gray-500">Why not be the first to upload one?</p>
-                        <button onclick="openUploadModal()" class="mt-4 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700">Upload a Note</button>
-                    </div>`;
-                return;
+        // Check session on load
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+                currentUser = session.user;
+                updateUserDisplay();
+                showApp();
+            } else {
+                showLogin();
             }
+        });
 
-            // Sort notes to show verified ones first, then by upvotes
-            subjectNotes.sort((a, b) => {
-                if (a.isVerified !== b.isVerified) return a.isVerified ? -1 : 1;
-                return b.upvotes - a.upvotes;
-            });
+        // Listen for changes
+        supabaseClient.auth.onAuthStateChange((_event, session) => {
+            if (session) {
+                currentUser = session.user;
+                updateUserDisplay();
+                showApp();
+            } else {
+                currentUser = null;
+                showLogin();
+            }
+        });
+
+        async function handleLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('login-btn');
+            const errorText = document.getElementById('login-error');
+
+            btn.textContent = "Processing...";
+            errorText.classList.add('hidden');
+
+            // Try Login
+            let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
             
-            container.innerHTML = subjectNotes.map(note => `
-                <div class="bg-white rounded-lg shadow-sm p-4 flex items-center justify-between transition-shadow hover:shadow-md">
-                    <div class="flex items-center space-x-4">
-                        ${note.isVerified 
-                            ? `<div class="flex-shrink-0 flex flex-col items-center justify-center h-12 w-12 rounded-full bg-green-100 text-green-600" title="Verified by a topper">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
-                               </div>` 
-                            : `<div class="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-gray-100 text-gray-500">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                               </div>`
-                        }
-                        <div>
-                            <h4 class="font-semibold text-gray-800">${note.title}</h4>
-                            <p class="text-xs text-gray-500">Uploaded by ${note.uploader}</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                         <button onclick="upvoteNote(${subjectId}, ${note.id}, this)" class="flex items-center space-x-2 text-gray-500 font-medium py-2 px-3 rounded-lg hover:bg-gray-100 transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333V17a1 1 0 001 1h6.758a1 1 0 00.97-1.22l-1.396-4.887A1 1 0 0012.358 11H9.5a1 1 0 00-1-1H6zM7 9a1 1 0 011-1h2.5a1 1 0 01.97 1.22l-1.396 4.887A1 1 0 019.118 15H8a1 1 0 01-1-1V9z" />
-                            </svg>
-                            <span class="text-sm">${note.upvotes}</span>
-                        </button>
-                        <button class="px-3 py-2 bg-gray-100 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors">Download</button>
-                    </div>
+            if (error) {
+                // If the error is our custom mock error, show it directly
+                if (error.message.includes("Please paste your Supabase URL")) {
+                    errorText.textContent = error.message;
+                    errorText.classList.remove('hidden');
+                    btn.textContent = "Login / Sign Up";
+                    return;
+                }
+
+                // If login fails, try signup
+                const signUpResponse = await supabaseClient.auth.signUp({ email, password });
+                if (signUpResponse.error) {
+                    errorText.textContent = signUpResponse.error.message;
+                    errorText.classList.remove('hidden');
+                    btn.textContent = "Login / Sign Up";
+                } else {
+                    btn.textContent = "Account Created! Logging in...";
+                }
+            }
+        }
+
+        async function logout() {
+            await supabaseClient.auth.signOut();
+        }
+        
+        function updateUserDisplay() {
+            document.getElementById('user-display-email').textContent = currentUser.email;
+        }
+
+        // ====================================================== //
+        // 4. NAVIGATION & UI
+        // ====================================================== //
+
+        function showLogin() {
+            document.getElementById('login-view').classList.remove('hidden');
+            document.getElementById('app-view').classList.add('hidden', 'opacity-0');
+        }
+
+        function showApp() {
+            document.getElementById('login-view').classList.add('hidden');
+            document.getElementById('app-view').classList.remove('hidden');
+            setTimeout(() => document.getElementById('app-view').classList.remove('opacity-0'), 10);
+            renderDashboard();
+        }
+
+        function renderDashboard() {
+            const container = document.getElementById('subjects-grid');
+            container.innerHTML = subjects.map(s => `
+                <div onclick="showSubject('${s.id}')" class="glass-card rounded-2xl p-6 cursor-pointer relative overflow-hidden group">
+                     <div class="absolute -right-4 -top-4 w-24 h-24 bg-gradient-to-br ${s.gradient} rounded-full opacity-20 group-hover:scale-150 transition-transform"></div>
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br ${s.gradient} flex items-center justify-center text-white text-2xl shadow-lg mb-4">${s.icon}</div>
+                    <h3 class="text-xl font-bold text-gray-800">${s.name}</h3>
+                    <p class="text-sm text-gray-600 mt-1">${s.description}</p>
                 </div>
             `).join('');
-        }
-
-        function populateUploadModalSubjects() {
-             const select = document.getElementById('subject-select');
-             select.innerHTML = subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-        }
-
-
-        // ====================================================== //
-        // NAVIGATION & EVENT HANDLERS
-        // ====================================================== //
-
-        function login() {
-            const loginView = document.getElementById('login-view');
-            const appView = document.getElementById('app-view');
-            
-            loginView.classList.add('opacity-0');
-            setTimeout(() => {
-                loginView.classList.add('hidden');
-                appView.classList.remove('hidden');
-                setTimeout(() => appView.classList.remove('opacity-0'), 20); // Fade in
-            }, 300);
-        }
-
-        function showDashboard() {
             document.getElementById('dashboard-view').classList.remove('hidden');
             document.getElementById('subject-view').classList.add('hidden');
         }
 
-        function showSubject(subjectId) {
+        async function showSubject(subjectId) {
+            currentSubjectId = subjectId;
             const subject = subjects.find(s => s.id === subjectId);
             document.getElementById('subject-title').textContent = subject.name;
-            renderNotes(subjectId);
             document.getElementById('dashboard-view').classList.add('hidden');
             document.getElementById('subject-view').classList.remove('hidden');
-        }
-        
-        function upvoteNote(subjectId, noteId, button) {
-             const subjectKey = subjects.find(s => s.id == subjectId).id;
-             const note = notes[subjectKey].find(n => n.id == noteId);
-             if (note) {
-                 note.upvotes++;
-                 button.querySelector('span').textContent = note.upvotes;
-                 // Add a little visual feedback
-                 button.classList.add('text-blue-600');
-                 setTimeout(() => button.classList.remove('text-blue-600'), 500);
-             }
+            
+            loadNotes(subjectId);
         }
 
-        function openUploadModal() {
-            document.getElementById('upload-modal').classList.remove('hidden');
-            document.getElementById('upload-modal').classList.add('flex');
+        async function loadNotes(subjectId) {
+            const container = document.getElementById('notes-list');
+            container.innerHTML = '<div class="text-center py-10"><div class="loader"></div></div>';
+            
+            const { data: notes, error } = await supabaseClient
+                .from('notes')
+                .select('*')
+                .eq('subject_id', subjectId)
+                .order('upvotes', { ascending: false });
+
+            if (error) {
+                console.error("Error loading notes", error);
+                container.innerHTML = `<div class="text-red-500 text-center">Failed to load notes</div>`;
+                return;
+            }
+
+            if (!notes || notes.length === 0) {
+                container.innerHTML = `<div class="text-center text-gray-500 py-8">No notes yet. Be the first!</div>`;
+                return;
+            }
+
+            container.innerHTML = notes.map(note => `
+                <div class="glass-card rounded-xl p-4 flex items-center justify-between">
+                    <div>
+                        <h4 class="font-bold text-gray-800 text-lg">${note.title}</h4>
+                        <p class="text-xs font-semibold text-gray-500">By ${note.uploader_email}</p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                         <button onclick="upvoteNote('${note.id}', ${note.upvotes})" class="flex items-center space-x-2 text-gray-500 font-bold px-3 py-2 rounded-xl hover:bg-white transition-colors">
+                            <span>👍 ${note.upvotes}</span>
+                        </button>
+                        <a href="${note.file_url}" target="_blank" class="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-bold rounded-xl hover:bg-gray-200">Download</a>
+                        <div class="dropdown">
+                            <button class="px-3 py-2 bg-white/50 text-purple-700 text-sm font-bold rounded-xl border border-purple-200">✨ AI</button>
+                            <div class="dropdown-content">
+                                <a href="#" onclick="event.preventDefault(); explainConcept('${note.title}')" class="block px-4 py-3 text-sm text-gray-700 hover:bg-purple-50">Explain</a>
+                                <a href="#" onclick="event.preventDefault(); generateFlashcards('${note.title}')" class="block px-4 py-3 text-sm text-gray-700 hover:bg-purple-50">Flashcards</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
         }
-        function closeUploadModal() {
-            document.getElementById('upload-modal').classList.add('hidden');
-            document.getElementById('upload-modal').classList.remove('flex');
+
+        // ====================================================== //
+        // 5. UPLOAD LOGIC
+        // ====================================================== //
+
+        function openUploadModal() { document.getElementById('upload-modal').classList.remove('hidden'); document.getElementById('upload-modal').classList.add('flex'); }
+        function closeUploadModal() { document.getElementById('upload-modal').classList.add('hidden'); document.getElementById('upload-modal').classList.remove('flex'); }
+
+        async function handleUpload() {
+            const title = document.getElementById('note-title-input').value;
+            const file = document.getElementById('file-upload').files[0];
+            const btn = document.getElementById('submit-upload-btn');
+
+            if (!title || !file) { alert("Please fill details"); return; }
+            btn.textContent = "Uploading...";
+
+            // Use a clean filename with timestamp
+            const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
+            
+            // 1. Upload to Supabase Storage
+            const { data: uploadData, error: uploadError } = await supabaseClient.storage
+                .from('notes')
+                .upload(fileName, file);
+
+            if (uploadError) {
+                alert("Upload failed: " + uploadError.message);
+                btn.textContent = "Submit";
+                return;
+            }
+
+            // 2. Get Public URL
+            const { data: { publicUrl } } = supabaseClient.storage
+                .from('notes')
+                .getPublicUrl(fileName);
+
+            // 3. Insert into Database
+            const { error: dbError } = await supabaseClient
+                .from('notes')
+                .insert([{
+                    title: title,
+                    subject_id: currentSubjectId,
+                    file_url: publicUrl,
+                    uploader_email: currentUser.email,
+                    upvotes: 0
+                }]);
+
+            if (dbError) {
+                alert("Database error: " + dbError.message);
+            } else {
+                closeUploadModal();
+                loadNotes(currentSubjectId); // Refresh list
+            }
+            btn.textContent = "Submit";
+        }
+
+        async function upvoteNote(noteId, currentVotes) {
+            await supabaseClient.from('notes').update({ upvotes: Number(currentVotes) + 1 }).eq('id', noteId);
+            loadNotes(currentSubjectId); // Simple refresh
+        }
+
+        // ====================================================== //
+        // 6. AI FEATURES
+        // ====================================================== //
+        
+        function openAiModal() { document.getElementById('ai-result-modal').classList.remove('hidden'); document.getElementById('ai-result-modal').classList.add('flex'); }
+        function closeAiModal() { document.getElementById('ai-result-modal').classList.add('hidden'); document.getElementById('ai-result-modal').classList.remove('flex'); document.getElementById('ai-modal-content').innerHTML = ''; }
+        
+        async function callGemini(payload) {
+             if(!geminiApiKey) { alert("Please add API Key"); return; }
+             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${geminiApiKey}`, {
+                 method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
+             });
+             const data = await res.json();
+             return data.candidates?.[0]?.content?.parts?.[0]?.text || "Error";
+        }
+
+        async function explainConcept(title) {
+            openAiModal(); document.getElementById('ai-modal-content').innerHTML = '<div class="loader"></div>';
+            const text = await callGemini({ contents: [{ parts: [{ text: `Explain "${title}" simply.` }] }] });
+            document.getElementById('ai-modal-content').innerHTML = `<div class="prose max-w-none text-gray-700">${text.replace(/\n/g, '<br>')}</div>`;
+        }
+
+        async function generateFlashcards(title) {
+             openAiModal(); document.getElementById('ai-modal-content').innerHTML = '<div class="loader"></div>';
+             const text = await callGemini({ contents: [{ parts: [{ text: `Create 3 flashcards for "${title}" as JSON array [{term, definition}]` }] }] });
+             try {
+                 const cards = JSON.parse(text.replace(/```json/g, '').replace(/```/g, ''));
+                 document.getElementById('ai-modal-content').innerHTML = cards.map(c => `<div class="p-4 bg-purple-50 rounded-lg mb-2"><b class="text-purple-800">${c.term}</b><p>${c.definition}</p></div>`).join('');
+             } catch(e) { document.getElementById('ai-modal-content').innerText = "Failed to generate."; }
         }
         
-        // Close modal on outside click
+        // Init Handlers
         document.getElementById('upload-modal').addEventListener('click', closeUploadModal);
-
-
-        // ====================================================== //
-        // INITIALIZATION
-        // ====================================================== //
-        
-        window.onload = () => {
-            renderDashboard();
-            populateUploadModalSubjects();
-        };
+        document.getElementById('ai-result-modal').addEventListener('click', closeAiModal);
+        document.getElementById('quiz-btn').onclick = () => { alert("Quiz feature requires notes to analyze first!"); };
 
     </script>
 </body>
